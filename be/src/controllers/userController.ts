@@ -1,36 +1,52 @@
 import type { Request, Response } from 'express';
 import User from '../models/user.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken'
 
 export async function createUser(req: Request, res: Response) {
-    const { uid, email } = req.body
-
     try {
-        if (!uid || !email) {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
             return res.status(400).json({
                 success: false,
-                message: 'all fields are required'
+                message: 'email and password are requied'
             })
         }
 
-        const payload = { uid, email }
-        const response = await User.create(payload)
+        const user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({
+                success: false,
+                message: 'email already exist'
+            })
+        }
 
-        return res.json({
+        // hashing password
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await User.create({ email, hashPassword });
+
+        // create jwt token
+        const secret = process.env.JWT_SECRET;
+        if (!secret) throw new Error('JWT_SECRET not found');
+        const token = jwt.sign(
+            { _id: newUser._id, email: newUser.email },
+            secret,
+            { expiresIn: '1hr' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict'
+        });
+
+        return res.status(201).json({
             success: true,
-            message: response
-        })
-
+            message: 'User register successfully',
+            token
+        });
     } catch (error) {
-        if (error instanceof Error) {
-            return res.json({
-                success: false,
-                message: error.message
-            })
-        } else{
-            return res.json({
-                success: false,
-                message: 'unknown error:', error
-            })
-        }
     }
 }

@@ -23,11 +23,9 @@ function Login() {
     const createUser = async (firebaseUid: string) => {
         try {
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/create`,{ firebaseUid, email })
-            console.log(response.data.message);
             return response.data
         } catch (error) {
-            console.log('fail to create user in backend');
-            console.log(error);
+            console.error('fail to create user in backend');
             throw error
         }
     }
