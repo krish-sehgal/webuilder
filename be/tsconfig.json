@@ -40,5 +40,8 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+
+    // manuals
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   }
 }
