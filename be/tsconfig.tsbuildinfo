@@ -1,1 +1,1 @@
-{"root":["./src/constants.ts","./src/index.ts","./src/prompts.ts","./src/stripindent.ts","./src/config/db.ts","./src/controllers/usercontroller.ts","./src/defaults/node.ts","./src/defaults/react.ts","./src/models/user.ts","./src/routers/userroute.ts"],"version":"5.9.3"}
+{"root":["./src/constants.ts","./src/index.ts","./src/prompts.ts","./src/stripindent.ts","./src/config/db.ts","./src/controllers/usercontroller.ts","./src/defaults/node.ts","./src/defaults/react.ts","./src/models/user.ts","./src/routers/userroute.ts","./src/utils/jwttoken.ts"],"version":"5.9.3"}
