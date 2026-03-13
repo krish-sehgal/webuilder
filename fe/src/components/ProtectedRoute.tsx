@@ -1,11 +1,12 @@
 import type React from "react"
 import { Navigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { Loader } from "./Loader"
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth()
 
-    if (loading) return <div>Loading...</div>
+    if (loading) return <Loader />
     if (!user) return <Navigate to="/login" />
 
     return children;

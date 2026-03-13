@@ -4,7 +4,7 @@ import { ChevronDown, LogOut } from "lucide-react";
 
 function ProfileDropdown() {
     const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false)
-    const { logout } = useAuth()
+    const { user, logout } = useAuth()
     const dropdownRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -26,9 +26,8 @@ function ProfileDropdown() {
                 className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600 transition"
             >
                 <div className="w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-xs font-medium text-purple-600 dark:text-purple-400">
-                    K
+                    {user?.email[0].toUpperCase()}
                 </div>
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Krish</span>
                 <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
             </button>
 
@@ -39,11 +38,11 @@ function ProfileDropdown() {
                     {/* User info */}
                     <div className="flex items-center gap-2.5 px-2.5 py-2 border-b border-gray-100 dark:border-gray-800 mb-1 pb-3">
                         <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-sm font-medium text-purple-600 dark:text-purple-400 shrink-0">
-                            K
+                            {user?.email[0].toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">Krish</p>
-                            <p className="text-xs text-gray-400 truncate">krish@example.com</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user?.email.split('@')[0]}</p>
+                            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                         </div>
                     </div>
 

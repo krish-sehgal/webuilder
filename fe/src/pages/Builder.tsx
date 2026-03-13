@@ -211,9 +211,7 @@ export function Builder() {
                                     onClick={async () => {
                                         const newMessage = { role: "user" as "user", content: userPrompt };
                                         setLoading(true);
-                                        const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/chat`, {
-                                            messages: [...llmMessages, newMessage]
-                                        });
+                                        const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/chat`, { messages: [...llmMessages, newMessage] }, { withCredentials: true });
                                         setLoading(false);
                                         setLlmMessages(x => [...x, newMessage]);
                                         setLlmMessages(x => [...x, { role: "assistant", content: stepsResponse.data.response }]);

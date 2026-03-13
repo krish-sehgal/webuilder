@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/me`, { withCredentials: true })
             .then(res => setUser(res.data.user))
             .catch(() => setUser(null))
-            .finally(() => setLoading(false));
+            .finally(() => setLoading(false))
     }, []);
 
     const logout = async () => {
