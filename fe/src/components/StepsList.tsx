@@ -9,13 +9,13 @@ interface StepsListProps {
 export function StepsList({ steps, currentStep, onStepClick }: StepsListProps) {
   return (
     <div className="flex flex-col gap-0.5 p-2">
-      {steps.map((step) => (
+      {steps.map((step, index) => (
         <div
-          key={`${step.id}-${step.status}-${step.title}`}
+          key={`${index}-${step.title}`}
           onClick={() => onStepClick(step.id)}
           className={`flex items-start gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition-colors ${currentStep === step.id
-              ? 'bg-purple-50 dark:bg-purple-900/20'
-              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+            ? 'bg-purple-50 dark:bg-purple-900/20'
+            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
         >
           {/* Status icon */}
@@ -38,10 +38,10 @@ export function StepsList({ steps, currentStep, onStepClick }: StepsListProps) {
           {/* Text */}
           <div className="min-w-0">
             <p className={`text-xs font-medium leading-tight ${step.status === 'completed'
-                ? 'text-purple-700 dark:text-purple-400'
-                : step.status === 'in-progress'
-                  ? 'text-gray-900 dark:text-white'
-                  : 'text-gray-500 dark:text-gray-400'
+              ? 'text-purple-700 dark:text-purple-400'
+              : step.status === 'in-progress'
+                ? 'text-gray-900 dark:text-white'
+                : 'text-gray-500 dark:text-gray-400'
               }`}>
               {step.title}
             </p>

@@ -3,15 +3,17 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { UserIcon } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const { setUser } = useAuth();
     const navigate = useNavigate();
+
+    const eNotify = (msg: string) => toast.error(msg)
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -22,8 +24,7 @@ function Login() {
             setUser(response.data.user)
             navigate('/')
         } catch (error: any) {
-            console.log(error);
-            setError(error.response?.data?.message || 'Something went wrong');
+            eNotify(error.response?.data?.message || 'Something went wrong');
         } finally {
             setLoading(false)
         }
@@ -40,10 +41,6 @@ function Login() {
                     <h1 className="text-xl font-medium text-gray-900 dark:text-white">Welcome back</h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
                 </div>
-
-                {error && (
-                    <p className="text-red-500 text-sm text-center mb-4">{error}</p>
-                )}
 
                 <form className="flex flex-col gap-4" onSubmit={handleLogin}>
 
@@ -94,6 +91,7 @@ function Login() {
                     </a>
                 </p>
             </div>
+            <Toaster />
         </div>
     )
 }

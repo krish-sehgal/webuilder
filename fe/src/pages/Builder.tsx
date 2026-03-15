@@ -13,20 +13,23 @@ import { Loader } from '../components/Loader.jsx';
 import { ArrowUp, Code2 } from 'lucide-react';
 import useWebContainer from '../hooks/useWebContainer';
 import ProfileDropdown from '../components/ProfileDropdown';
+import toast, { Toaster } from 'react-hot-toast';
 
 export function Builder() {
     const location = useLocation();
+    const webcontainer = useWebContainer();
     const { prompt } = location.state as { prompt: string };
     const [userPrompt, setPrompt] = useState("");
     const [llmMessages, setLlmMessages] = useState<{ role: "user" | "assistant", content: string; }[]>([]);
     const [loading, setLoading] = useState(false);
     const [templateSet, setTemplateSet] = useState(false);
-    const webcontainer = useWebContainer();
     const [currentStep, setCurrentStep] = useState(1);
     const [activeTab, setActiveTab] = useState<'code' | 'preview'>('code');
     const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
     const [steps, setSteps] = useState<Step[]>([]);
     const [files, setFiles] = useState<FileItem[]>([]);
+
+    const eNotify = (msg: string) => toast.error(msg)
 
     useEffect(() => {
         let originalFiles = [...files];
@@ -131,6 +134,7 @@ export function Builder() {
         const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/template`, { prompt: prompt.trim() }, { withCredentials: true });
         if (!response.data.success) {
             console.error(`Error: ${response.data.message}`);
+            eNotify(`Error: ${response.data.message}`)
             return;
         }
         setTemplateSet(true);
@@ -244,15 +248,17 @@ export function Builder() {
                         <TabView activeTab={activeTab} onTabChange={setActiveTab} files={files} />
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        {activeTab === 'code' ? (
-                            <CodeEditor file={selectedFile} />
+                        {activeTab === 'preview' && webcontainer ? (
+                            <PreviewFrame webContainer={webcontainer} />
+                        ) : activeTab === 'preview' ? (
+                            <div>Initializing...</div>
                         ) : (
-                            <PreviewFrame webContainer={webcontainer!} />
+                            <CodeEditor file={selectedFile} />
                         )}
                     </div>
                 </div>
-
             </div>
+            <Toaster />
         </div>
     );
 }
