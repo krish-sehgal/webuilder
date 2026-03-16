@@ -2,15 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wand2, Zap } from 'lucide-react';
 import ProfileDropdown from '../components/ProfileDropdown';
+import toast, { Toaster } from 'react-hot-toast';
 
 export function Home() {
   const [prompt, setPrompt] = useState('');
   const navigate = useNavigate();
 
+  const eNotify = (msg: string) => toast.error(msg)
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim()) {
       navigate('/builder', { state: { prompt } });
+    } else {
+      eNotify(`Prompt can't be empty`)
     }
   };
 
@@ -68,8 +73,8 @@ export function Home() {
             </button>
           ))}
         </div>
-
       </div>
+      <Toaster />
     </div>
   );
 }

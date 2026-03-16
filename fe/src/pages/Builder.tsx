@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { StepsList } from '../components/StepsList';
 import { FileExplorer } from '../components/FileExplorer';
 import { TabView } from '../components/TabView';
@@ -18,7 +18,6 @@ import toast, { Toaster } from 'react-hot-toast';
 export function Builder() {
     const location = useLocation();
     const webcontainer = useWebContainer();
-    const { prompt } = location.state as { prompt: string };
     const [userPrompt, setPrompt] = useState("");
     const [llmMessages, setLlmMessages] = useState<{ role: "user" | "assistant", content: string; }[]>([]);
     const [loading, setLoading] = useState(false);
@@ -28,6 +27,12 @@ export function Builder() {
     const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
     const [steps, setSteps] = useState<Step[]>([]);
     const [files, setFiles] = useState<FileItem[]>([]);
+
+    if (!location.state) {
+        console.log('');
+        <Navigate to="/" />
+    }
+    const { prompt } = location.state as { prompt: string };
 
     const eNotify = (msg: string) => toast.error(msg)
 
