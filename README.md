@@ -9,11 +9,12 @@ Generate fully functional webpages from a single prompt.
 - Live preview in-browser using WebContainer
 - File explorer and code editor
 - User authentication with JWT
+- Download generated project as a ZIP file
 
 ## Tech Stack
 **Frontend:** React, TypeScript, Tailwind CSS, Vite  
 **Backend:** Node.js, Express, TypeScript, MongoDB  
-**Other:** WebContainer API, React Router, Axios
+**Other:** WebContainer API, React Router, Axios, JSZip, FileSaver.js
 
 ## Getting Started
 
