@@ -47,10 +47,16 @@ export async function getTemplate(req: Request, res: Response) {
                 uiPrompts: [nodeBasePrompt]
             })
         }
-    } catch (error) {
+    } catch (error: any) {
+        if (error?.status === 429 || error?.code === "rate_limit_exceeded") {
+            res.json({
+                success: false,
+                message: 'Too many requests. Please wait a moment and try again.'
+            })
+        }
         res.json({
             success: false,
-            message: 'saale gareeb free api call kr raha ha lund lele mera'
+            message: 'something went wrong. Please try again'
         })
     }
 }

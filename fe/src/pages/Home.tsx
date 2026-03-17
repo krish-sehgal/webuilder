@@ -8,14 +8,12 @@ export function Home() {
   const [prompt, setPrompt] = useState('');
   const navigate = useNavigate();
 
-  const eNotify = (msg: string) => toast.error(msg)
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim()) {
       navigate('/builder', { state: { prompt } });
     } else {
-      eNotify(`Prompt can't be empty`)
+      toast.error(`Prompt can't be empty`)
     }
   };
 

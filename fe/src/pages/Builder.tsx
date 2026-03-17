@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { StepsList } from '../components/StepsList';
 import { FileExplorer } from '../components/FileExplorer';
 import { TabView } from '../components/TabView';
@@ -18,6 +18,7 @@ import toast, { Toaster } from 'react-hot-toast';
 export function Builder() {
     const location = useLocation();
     const webcontainer = useWebContainer();
+    const navigate = useNavigate()
     const [userPrompt, setPrompt] = useState("");
     const [llmMessages, setLlmMessages] = useState<{ role: "user" | "assistant", content: string; }[]>([]);
     const [loading, setLoading] = useState(false);
@@ -28,13 +29,14 @@ export function Builder() {
     const [steps, setSteps] = useState<Step[]>([]);
     const [files, setFiles] = useState<FileItem[]>([]);
 
-    if (!location.state) {
-        console.log('');
-        <Navigate to="/" />
-    }
-    const { prompt } = location.state as { prompt: string };
+    useEffect(() => {
+        if (!location.state) {
+            navigate('/')
+            return
+        }
+    }, [])
 
-    const eNotify = (msg: string) => toast.error(msg)
+    const { prompt } = (location.state || {}) as { prompt: string };
 
     useEffect(() => {
         let originalFiles = [...files];
@@ -136,42 +138,50 @@ export function Builder() {
     }, [files, webcontainer]);
 
     async function init() {
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/template`, { prompt: prompt.trim() }, { withCredentials: true });
-        if (!response.data.success) {
-            console.error(`Error: ${response.data.message}`);
-            eNotify(`Error: ${response.data.message}`)
-            return;
-        }
-        setTemplateSet(true);
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/template`, { prompt: prompt.trim() }, { withCredentials: true });
+            if (!response.data.success) {
+                toast.error(`Error: ${response.data.message}`)
+                return;
+            }
+            setTemplateSet(true);
 
-        const { prompts, uiPrompts } = response.data;
+            const { prompts, uiPrompts } = response.data;
 
-        setSteps(parseXml(uiPrompts[0]).map((x: Step) => ({
-            ...x,
-            status: "pending"
-        })));
+            setSteps(parseXml(uiPrompts[0]).map((x: Step) => ({
+                ...x,
+                status: "pending"
+            })));
 
-        setLoading(true);
-        const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/chat`, {
-            messages: [...prompts, prompt].map(content => ({
+            setLoading(true);
+            const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/chat`, {
+                messages: [...prompts, prompt].map(content => ({
+                    role: "user",
+                    content
+                }))
+            }, { withCredentials: true })
+
+            setLoading(false);
+
+            setSteps(s => [...s, ...parseXml(stepsResponse.data.response).map(x => ({
+                ...x,
+                status: "pending" as "pending"
+            }))]);
+
+            setLlmMessages([...prompts, prompt].map(content => ({
                 role: "user",
                 content
-            }))
-        }, { withCredentials: true })
+            })));
 
-        setLoading(false);
-
-        setSteps(s => [...s, ...parseXml(stepsResponse.data.response).map(x => ({
-            ...x,
-            status: "pending" as "pending"
-        }))]);
-
-        setLlmMessages([...prompts, prompt].map(content => ({
-            role: "user",
-            content
-        })));
-
-        setLlmMessages(x => [...x, { role: "assistant", content: stepsResponse.data.response }]);
+            setLlmMessages(x => [...x, { role: "assistant", content: stepsResponse.data.response }]);
+        } catch (error: any) {
+            if (error.response.state === 429) {
+                toast.error(error?.message)
+                navigate('/')
+            } else {
+                toast.error(error?.message)
+            }
+        }
     }
 
     useEffect(() => {
