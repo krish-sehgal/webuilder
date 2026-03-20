@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserPlusIcon } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 function Register() {
     const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ function Register() {
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
+    const { setUser } = useAuth()
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -19,6 +21,8 @@ function Register() {
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/create`, { email, password }, { withCredentials: true })
             const data = response.data
             if (data.success) {
+                console.log(data)
+                setUser(data.user)
                 navigate('/')
             }
         } catch (error: any) {

@@ -39,7 +39,8 @@ export async function createUser(req: Request, res: Response) {
 
         return res.status(201).json({
             success: true,
-            message: 'User register successfully'
+            message: 'User register successfully',
+            user: payload
         });
     } catch (error: any) {
         return res.status(500).json({

@@ -266,7 +266,7 @@ export function Builder() {
                         {activeTab === 'preview' && webcontainer ? (
                             <PreviewFrame webContainer={webcontainer} />
                         ) : activeTab === 'preview' ? (
-                            <div>Initializing...</div>
+                            <div className='h-full w-full flex justify-center items-center'>Initializing...</div>
                         ) : (
                             <CodeEditor file={selectedFile} />
                         )}
