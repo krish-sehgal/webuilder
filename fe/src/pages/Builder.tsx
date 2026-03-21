@@ -14,11 +14,13 @@ import { ArrowUp, Code2 } from 'lucide-react';
 import useWebContainer from '../hooks/useWebContainer';
 import ProfileDropdown from '../components/ProfileDropdown';
 import toast, { Toaster } from 'react-hot-toast';
+import Loading from './Loading.js';
 
 export function Builder() {
     const location = useLocation();
     const webcontainer = useWebContainer();
     const navigate = useNavigate()
+    const prompt = typeof location.state?.prompt === 'string' ? location.state.prompt : '';
     const [userPrompt, setPrompt] = useState("");
     const [llmMessages, setLlmMessages] = useState<{ role: "user" | "assistant", content: string; }[]>([]);
     const [loading, setLoading] = useState(false);
@@ -30,13 +32,11 @@ export function Builder() {
     const [files, setFiles] = useState<FileItem[]>([]);
 
     useEffect(() => {
-        if (!location.state) {
+        if (!prompt) {
             navigate('/')
             return
         }
-    }, [])
-
-    const { prompt } = (location.state || {}) as { prompt: string };
+    }, [navigate, prompt])
 
     useEffect(() => {
         let originalFiles = [...files];
@@ -134,10 +134,11 @@ export function Builder() {
         };
         const mountStructure = createMountStructure(files);
         webcontainer?.mount(mountStructure)
-        console.log('structure mounted');
     }, [files, webcontainer]);
 
     async function init() {
+        if (!prompt) return;
+
         try {
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/template`, { prompt: prompt.trim() }, { withCredentials: true });
             if (!response.data.success) {
@@ -175,7 +176,7 @@ export function Builder() {
 
             setLlmMessages(x => [...x, { role: "assistant", content: stepsResponse.data.response }]);
         } catch (error: any) {
-            if (error.response.state === 429) {
+            if (error.response?.status === 429) {
                 toast.error(error?.message)
                 navigate('/')
             } else {
@@ -186,7 +187,7 @@ export function Builder() {
 
     useEffect(() => {
         init();
-    }, [])
+    }, [prompt])
 
     return (
         <div className="h-screen flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -217,34 +218,37 @@ export function Builder() {
                     <div className="flex-1 overflow-y-auto">
                         <StepsList steps={steps} currentStep={currentStep} onStepClick={setCurrentStep} />
                     </div>
-                    {!(loading || !templateSet) && (
-                        <div className="p-2.5 shrink-0 border-t border-gray-200 dark:border-gray-800">
-                            <div className="relative">
-                                <textarea
-                                    value={userPrompt}
-                                    onChange={(e) => setPrompt(e.target.value)}
-                                    placeholder="Describe modifications..."
-                                    className="w-full pl-3 pr-9 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/40 resize-none h-16 leading-relaxed transition"
-                                />
-                                <button
-                                    onClick={async () => {
-                                        const newMessage = { role: "user" as "user", content: userPrompt };
+                    <div className="p-2.5 shrink-0 border-t border-gray-200 dark:border-gray-800">
+                        <div className="relative">
+                            <textarea
+                                value={userPrompt}
+                                onChange={(e) => setPrompt(e.target.value)}
+                                placeholder="Describe modifications..."
+                                className="w-full pl-3 pr-9 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/40 resize-none h-16 leading-relaxed transition"
+                            />
+                            <button
+                                onClick={async () => {
+                                    const newMessage = { role: "user" as "user", content: userPrompt };
+                                    try {
                                         setLoading(true);
                                         const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/chat`, { messages: [...llmMessages, newMessage] }, { withCredentials: true });
-                                        setLoading(false);
                                         setLlmMessages(x => [...x, newMessage]);
                                         setLlmMessages(x => [...x, { role: "assistant", content: stepsResponse.data.response }]);
                                         setSteps(s => [...s, ...parseXml(stepsResponse.data.response).map(x => ({
                                             ...x, status: "pending" as "pending"
                                         }))]);
-                                    }}
-                                    className="absolute bottom-2 right-2 w-6 h-6 rounded-lg bg-purple-600 hover:bg-purple-700 flex items-center justify-center transition cursor-pointer"
-                                >
-                                    {(loading || !templateSet) ? <Loader /> : <ArrowUp className="w-3 h-3 text-white" />}
-                                </button>
-                            </div>
+                                    } catch (error: any) {
+                                        toast.error(error?.response?.data?.message || 'Something went wrong')
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                className="absolute bottom-2 right-2 w-6 h-6 rounded-lg bg-purple-600 hover:bg-purple-700 flex items-center justify-center transition cursor-pointer"
+                            >
+                                {(loading || !templateSet) ? <Loader /> : <ArrowUp className="w-3 h-3 text-white" />}
+                            </button>
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 {/* File explorer */}
@@ -253,20 +257,22 @@ export function Builder() {
                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Files</span>
                     </div>
                     <div className="flex-1 overflow-y-auto p-2">
-                        <FileExplorer files={files} onFileSelect={setSelectedFile} />
+                        {(loading || !templateSet) ?
+                            <Loading /> :
+                            <FileExplorer files={files} onFileSelect={setSelectedFile} />}
                     </div>
                 </div>
 
                 {/* Code / Preview */}
                 <div className="flex flex-col overflow-hidden bg-white dark:bg-gray-900">
                     <div className="px-3 py-2 shrink-0 border-b border-gray-200 dark:border-gray-800">
-                        <TabView activeTab={activeTab} onTabChange={setActiveTab} files={files} />
+                        <TabView activeTab={activeTab} onTabChange={setActiveTab} files={files} loading={loading} />
                     </div>
                     <div className="flex-1 overflow-hidden">
                         {activeTab === 'preview' && webcontainer ? (
                             <PreviewFrame webContainer={webcontainer} />
                         ) : activeTab === 'preview' ? (
-                            <div className='h-full w-full flex justify-center items-center'>Initializing...</div>
+                            <div className='h-full w-full flex justify-center items-center text-white'>Initializing...</div>
                         ) : (
                             <CodeEditor file={selectedFile} />
                         )}

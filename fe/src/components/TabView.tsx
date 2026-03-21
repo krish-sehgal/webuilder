@@ -7,9 +7,10 @@ interface TabViewProps {
     activeTab: 'code' | 'preview';
     onTabChange: (tab: 'code' | 'preview') => void;
     files: FileItem[];
+    loading: boolean;
 }
 
-export function TabView({ activeTab, onTabChange, files }: TabViewProps) {
+export function TabView({ activeTab, onTabChange, files, loading }: TabViewProps) {
     const handleDownloadProject = async (files: FileItem[]) => {
         const zip = new JSZip();
 
@@ -46,6 +47,7 @@ export function TabView({ activeTab, onTabChange, files }: TabViewProps) {
                         ? 'bg-gray-700 text-gray-100'
                         : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
                         }`}
+                    disabled={loading}
                 >
                     <Code2 className="w-4 h-4" />
                     <span className={`${activeTab === 'code' ? 'block' : 'hidden'}`}>Code</span>
@@ -56,6 +58,7 @@ export function TabView({ activeTab, onTabChange, files }: TabViewProps) {
                         ? 'bg-gray-700 text-gray-100'
                         : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
                         }`}
+                    disabled={loading}
                 >
                     <Eye className="w-4 h-4" />
                     <span className={`${activeTab === 'preview' ? 'block' : 'hidden'}`}>Preview</span>

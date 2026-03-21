@@ -53,6 +53,7 @@ export async function getTemplate(req: Request, res: Response) {
                 success: false,
                 message: 'Too many requests. Please wait a moment and try again.'
             })
+            return
         }
         res.json({
             success: false,

@@ -27,13 +27,9 @@ export function PreviewFrame({ webContainer }: PreviewFrameProps) {
         return;
       }
 
-      console.log('Install completed, starting dev server...');
-
       await webContainer.spawn('npm', ['run', 'dev']);
 
-      webContainer.on('server-ready', (port, url) => {
-        console.log(url);
-        console.log(port);
+      webContainer.on('server-ready', (_port, url) => {
         setUrl(url);
       })
     } catch (error) {
